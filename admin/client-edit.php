@@ -45,7 +45,7 @@
                     $updatePictureDisplay = $clientData['picture'];
                   }
                 ?>
-                <img id="picture_display" class="profile-user-img img-fluid img-circle" src="/images/client/<?php echo $updatePictureDisplay; ?>" style="width: 200px; display: block; margin-right: auto; margin-left: auto;">
+                <img id="picture_display" class="img-fluid rounded" src="/images/client/<?php echo $updatePictureDisplay; ?>" style="width: 200px; display: block; margin-right: auto; margin-left: auto;">
               </div>
               <br>
 

@@ -1,6 +1,19 @@
-<?php
-  $page = 'coach-add';
+<?php 
+  $page = 'dashboard';
   include 'header.php'; 
+
+  $client_id = $_GET['id'];
+  //$client_id = urldecode(base64_decode($id));
+
+  // $client = $pdo->prepare("SELECT * FROM client WHERE id = '".$client_id."'");
+  // $client->execute();
+  // $clientData = $client->fetch(PDO::FETCH_ASSOC);
+
+  $client = $connection->query("SELECT * FROM client WHERE id = '".$client_id."'");
+  $clientData = $client->fetch_array();
+
+  $birthDate = new DateTime($clientData['birthDate']);
+  $age = $birthDate->diff(new DateTime);
 ?>
 
 <!-- Content Header (Page header) -->
@@ -8,7 +21,7 @@
   <div class="container-fluid">
     <div class="row mb-2">
       <div class="col-sm-6">
-        <h1 class="m-0">Add Coach</h1>
+        <h1 class="m-0">Edit Client</h1>
       </div><!-- /.col -->
     </div><!-- /.row -->
   </div><!-- /.container-fluid -->
@@ -19,12 +32,20 @@
 <div class="content">
   <div class="container-fluid">
     <div class="row">
-      <div class="col-lg-4 col-md-4">
-        <form action="" method="POST" enctype="multipart/form-data" id="addCoachForm">
+      
+        <div class="col-lg-4 col-md-4">
           <div class="card card-warning card-outline">
             <div class="card-body box-profile">
+              <form action="" method="POST" enctype="multipart/form-data" id="updateClientForm">
               <div class="text-center">
-                <img id="picture_display" class="img-fluid rounded" src="../images/no_image.png" style="width: 200px; display: block; margin-right: auto; margin-left: auto;">
+                <?php
+                  if ($clientData['picture'] == "none" || $clientData['picture'] == NULL) {
+                    $updatePictureDisplay = "no_image.png";
+                  }else {
+                    $updatePictureDisplay = $clientData['picture'];
+                  }
+                ?>
+                <img id="picture_display" class="img-fluid rounded" src="/images/client/<?php echo $updatePictureDisplay; ?>" style="width: 200px; display: block; margin-right: auto; margin-left: auto;">
               </div>
               <br>
 
@@ -32,7 +53,7 @@
                 <li class="list-group-item">
                   <label>Upload Picture</label>
                   <div class="custom-file">
-                    <input type="file" name="picture" id="picture" class="custom-file-input form-control-sm" accept="image/*" required>
+                    <input type="file" name="picture" id="picture" class="custom-file-input form-control-sm" accept="image/*">
                     <label class="custom-file-label">Choose file</label>
                   </div>
                 </li>
@@ -44,7 +65,11 @@
         <div class="col-lg-8">
           <div class="card card-warning card-outline">
             <div class="card-header">
-              <h4 class="card-title">Coach Form</h4>
+              <h4 class="card-title">Client Form</h4>
+
+              <div class="card-tools">
+                <span>Client ID - <?= $clientData['client_id']; ?></span>
+              </div>
             </div>
             <div class="card-body">
 
@@ -52,28 +77,28 @@
                 <div class="col-lg-6">
                   <div class="form-group">
                     <span><b>First Name</b></span>
-                    <input type="text" class="form-control form-control-sm" name="firstname" placeholder="Enter First Name" required>
+                    <input type="text" class="form-control form-control-sm" name="firstname" value="<?= $clientData['firstname']; ?>">
                   </div>
                   <div class="form-group">
                     <span><b>Middle Name</b></span>
-                    <input type="text" class="form-control form-control-sm" name="middlename" placeholder="Enter Middle Name" required>
+                    <input type="text" class="form-control form-control-sm" name="middlename" value="<?= $clientData['middlename']; ?>">
                   </div>
                   <div class="form-group">
                     <span><b>Last Name</b></span>
-                    <input type="text" class="form-control form-control-sm" name="lastname" placeholder="Enter Last Name" required>
+                    <input type="text" class="form-control form-control-sm" name="lastname" value="<?= $clientData['lastname']; ?>">
                   </div>
                   <div class="form-group">
                     <span><b>Phone Number</b></span>
-                    <input type="text" class="form-control form-control-sm" name="contact_no" placeholder="Enter Contact Number" required>
+                    <input type="text" class="form-control form-control-sm" name="contact_no" value="<?= $clientData['contact_no']; ?>">
                   </div>
                   <div class="form-group">
                     <span><b>Gender</b></span><br>
                     <div class="custom-control custom-radio custom-control-inline">
-                      <input type="radio" name="gender" id="gendermale" class="custom-control-input" value="Male" required>
+                      <input type="radio" name="gender" id="gendermale" class="custom-control-input" value="Male" <?php echo ($clientData['gender'] == 'Male') ? 'checked' : null; ?> required>
                       <label class="custom-control-label" for="gendermale">Male</label>
                     </div>
                     <div class="custom-control custom-radio custom-control-inline">
-                      <input type="radio" name="gender" id="genderfemale" class="custom-control-input" value="Female" required>
+                      <input type="radio" name="gender" id="genderfemale" class="custom-control-input" value="Female" <?php echo ($clientData['gender'] == 'Female') ? 'checked' : null; ?> required>
                       <label class="custom-control-label" for="genderfemale">Female</label>
                     </div>
                   </div>
@@ -82,44 +107,27 @@
                 <div class="col-lg-6">
                   <div class="form-group">
                     <span><b>Birth Date</b></span>
-                    <input type="date" class="form-control form-control-sm" name="birthDate" required>
-                  </div>
-                  <div class="form-group">
-                    <span><b>Skills</b></span>
-                    <select name="coach_skills_id" class="form-control form-control-sm" required>
-                      <option selected="" disabled="" value="">- - - Select Coach Skills - - -</option>
-                      <?php  
-                        $skills = $connection->query("SELECT * FROM skills");
-                        if ($skills->num_rows < 1) {
-                          ?>
-                            <option disabled>No skills available</option>
-                          <?php
-                        }else {
-                          while ($skillsData = $skills->fetch_array()) {
-                            ?>
-                              <option value="<?= $skillsData['id']; ?>">
-                                <?= $skillsData['skills_name']; ?>
-                              </option>
-                            <?php
-                          }
-                        }
-                      ?>
-                    </select>
+                    <input type="date" class="form-control form-control-sm" name="birthDate" value="<?= $clientData['birthDate']; ?>">
                   </div>
                   <div class="form-group">
                     <span><b>Address</b></span>
-                    <textarea class="form-control" rows="4" name="address" placeholder="Address...."></textarea>
+                    <textarea class="form-control" rows="4" name="address"><?= $clientData['address']; ?></textarea>
+                  </div>
+                </div><!-- /.col -->
+
+                <div class="col-2">
+                  <div class="form-group">
+                    <input type="hidden" name="update_id" id="update_id" value="<?= $clientData['id']; ?>">
+                    <button type="submit" class="btn btn-success btn-sm btn-block"><i class="fas fa-save"></i> Update</button>
                   </div>
                 </div><!-- /.col -->
 
               </div><!-- /.row -->
+              </form>
             </div><!-- /.card-body -->
-            <div class="card-footer">
-              <button type="submit" class="btn btn-outline-success btn-sm"><i class="fas fa-save"></i> Save</button>
-            </div>
           </div><!-- /.card -->
-        </form>
-      </div><!-- /.col -->
+        </div><!-- /.col -->
+      
     </div><!-- /.row -->
   </div><!-- /.container-fluid -->
 </div><!-- /.content -->
@@ -128,13 +136,12 @@
 <script type="text/javascript">
   $(document).ready(function(){
 
-
-    $('#addCoachForm').submit(function(e){
+    $('#updateClientForm').submit(function(e){
       e.preventDefault();
       var formData = new FormData($(this)[0]);
 
       $.ajax({
-        url: "/includes/coach-add.php",
+        url: "/includes/client-edit.php",
         method: "POST",
         dataType: "TEXT",
         contentType: false,
@@ -142,30 +149,19 @@
         data: formData,
         success: function(data){
           console.log(data);
-          if (data == "Contact Taken") {
+          if (data == "Failed") {
             swal({
-              title: "Contact Number already exist.",
-              icon: "warning"
-            });
-
-          }else if (data == "Insert Failed") {
-            swal({
-              title: "Failed to add new member. Please try again later.",
-              icon: "error"
-            });
-
-          }else if (data == "Image failed") {
-            swal({
-              title: "Failed to upload image. Please try another one.",
+              title: "Failed to update client's information. Please try again later.",
               icon: "error"
             });
 
           }else {
             swal({
-              title: "New coach has been added.",
+              title: "Client's information has been updated.",
               icon: "success"
             }).then(function(){
-              location.href = "/list-coach";
+              location.href = "index.php";
+              //location.reload();
             });
           }
         }

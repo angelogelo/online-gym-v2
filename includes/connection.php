@@ -6,7 +6,7 @@
 	$host = "localhost";
 	$username = "root";
 	$password = "";
-	$database = "practice_gym_file";
+	$database = "online_gym_v2";
 
 	$connection = new mysqli($host, $username, $password, $database);
 
